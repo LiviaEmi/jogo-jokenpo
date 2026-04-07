@@ -1,0 +1,418 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+
+  .screen { display: none; flex-direction: column; align-items: center; gap: 1.5rem; padding: 2rem 1rem; }
+  .screen.active { display: flex; }
+
+  .title-area { text-align: center; }
+  .title-area h1 { font-size: 28px; font-weight: 500; color: var(--color-text-primary); letter-spacing: -0.5px; }
+  .title-area p { font-size: 14px; color: var(--color-text-secondary); margin-top: 4px; }
+
+  .nature-strip {
+    display: flex; gap: 8px; align-items: center; justify-content: center;
+    font-size: 11px; color: var(--color-text-tertiary); letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--color-text-tertiary); opacity: 0.4; }
+
+  .input-group { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 320px; }
+  .input-group label { font-size: 12px; color: var(--color-text-secondary); }
+  .input-group input { width: 100%; padding: 10px 14px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); font-size: 15px; background: var(--color-background-primary); color: var(--color-text-primary); }
+
+  .btn-primary {
+    padding: 12px 32px; border-radius: var(--border-radius-md);
+    background: var(--color-text-primary); color: var(--color-background-primary);
+    font-size: 15px; font-weight: 500; border: none; cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.82; }
+
+  .btn-ghost {
+    padding: 10px 24px; border-radius: var(--border-radius-md);
+    background: transparent; color: var(--color-text-secondary);
+    font-size: 14px; border: 0.5px solid var(--color-border-tertiary); cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-ghost:hover { background: var(--color-background-secondary); }
+
+  .divider { width: 48px; height: 0.5px; background: var(--color-border-tertiary); }
+
+  .scores {
+    display: flex; gap: 16px; width: 100%; max-width: 400px;
+  }
+  .score-card {
+    flex: 1; background: var(--color-background-secondary);
+    border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; text-align: center;
+  }
+  .score-name { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .score-num { font-size: 28px; font-weight: 500; color: var(--color-text-primary); }
+
+  .vs-badge { font-size: 11px; color: var(--color-text-tertiary); display: flex; align-items: center; }
+
+  .player-section { width: 100%; max-width: 400px; }
+  .player-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 10px; }
+  .player-name-tag { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+
+  .choices { display: flex; gap: 10px; width: 100%; }
+  .choice-btn {
+    flex: 1; padding: 1rem 0.5rem; border-radius: var(--border-radius-lg);
+    border: 0.5px solid var(--color-border-tertiary);
+    background: var(--color-background-primary);
+    cursor: pointer; text-align: center; transition: border-color 0.15s, background 0.15s;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .choice-btn:hover { background: var(--color-background-secondary); border-color: var(--color-border-secondary); }
+  .choice-btn.selected { border: 1.5px solid var(--color-text-primary); background: var(--color-background-secondary); }
+  .choice-btn.disabled { opacity: 0.35; pointer-events: none; }
+
+  .choice-icon { width: 44px; height: 44px; }
+  .choice-label { font-size: 12px; color: var(--color-text-secondary); }
+
+  .result-area {
+    width: 100%; max-width: 400px;
+    border-radius: var(--border-radius-lg);
+    border: 0.5px solid var(--color-border-tertiary);
+    background: var(--color-background-primary);
+    padding: 1.25rem;
+  }
+  .result-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .result-move { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .result-move svg { width: 36px; height: 36px; }
+  .result-move-label { font-size: 11px; color: var(--color-text-secondary); }
+  .result-winner { font-size: 15px; font-weight: 500; color: var(--color-text-primary); text-align: center; }
+  .result-sub { font-size: 12px; color: var(--color-text-secondary); text-align: center; margin-top: 2px; }
+
+  .step-indicator { display: flex; gap: 6px; }
+  .step-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-border-secondary); }
+  .step-dot.active { background: var(--color-text-primary); }
+
+  .rules-list { width: 100%; max-width: 340px; }
+  .rule-row {
+    display: flex; align-items: center; gap: 12px; padding: 10px 0;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    font-size: 14px; color: var(--color-text-secondary);
+  }
+  .rule-row:last-child { border-bottom: none; }
+  .rule-icon { width: 28px; height: 28px; flex-shrink: 0; }
+
+  .menu-btns { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 280px; }
+
+  .back-link {
+    font-size: 13px; color: var(--color-text-tertiary); cursor: pointer;
+    text-decoration: none; align-self: flex-start;
+  }
+  .back-link:hover { color: var(--color-text-secondary); }
+
+  .hidden-choice {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .hidden-box {
+    width: 44px; height: 44px; border-radius: 8px;
+    background: var(--color-background-secondary);
+    border: 0.5px solid var(--color-border-tertiary);
+  }
+</style>
+
+<div id="screen-names" class="screen active">
+  <div class="title-area">
+    <h1>Jokenpô</h1>
+    <p>pedra · papel · tesoura</p>
+  </div>
+  <div class="nature-strip">
+    <span class="dot"></span><span>natureza & equilíbrio</span><span class="dot"></span>
+  </div>
+  <div class="divider"></div>
+  <div class="input-group">
+    <label>jogador 1</label>
+    <input type="text" id="name1" placeholder="seu nome..." autocomplete="off" />
+  </div>
+  <div class="input-group">
+    <label>jogador 2</label>
+    <input type="text" id="name2" placeholder="seu nome..." autocomplete="off" />
+  </div>
+  <button class="btn-primary" onclick="startGame()">começar</button>
+</div>
+
+<div id="screen-menu" class="screen">
+  <div class="title-area">
+    <h1 id="menu-title">bem-vindos</h1>
+    <p id="menu-sub">escolha uma opção</p>
+  </div>
+  <div class="scores" id="menu-scores">
+    <div class="score-card">
+      <div class="score-name" id="menu-s1">—</div>
+      <div class="score-num" id="menu-p1">0</div>
+    </div>
+    <div class="vs-badge">vs</div>
+    <div class="score-card">
+      <div class="score-name" id="menu-s2">—</div>
+      <div class="score-num" id="menu-p2">0</div>
+    </div>
+  </div>
+  <div class="menu-btns">
+    <button class="btn-primary" onclick="goTo('screen-play')">jogar</button>
+    <button class="btn-ghost" onclick="goTo('screen-rules')">ver as regras</button>
+    <button class="btn-ghost" onclick="resetAll()">novo jogo</button>
+  </div>
+</div>
+
+<div id="screen-rules" class="screen">
+  <span class="back-link" onclick="goTo('screen-menu')">← voltar</span>
+  <div class="title-area">
+    <h1>regras</h1>
+    <p>quem vence quem</p>
+  </div>
+  <div class="rules-list">
+    <div class="rule-row">
+      <svg class="rule-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="22" cy="26" rx="13" ry="9" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/>
+        <ellipse cx="22" cy="22" rx="10" ry="12" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/>
+        <ellipse cx="22" cy="20" rx="7" ry="9" fill="var(--color-background-primary)" stroke="var(--color-border-primary)" stroke-width="1.2"/>
+      </svg>
+      <span>pedra <strong style="color:var(--color-text-primary)">quebra</strong> a tesoura</span>
+    </div>
+    <div class="rule-row">
+      <svg class="rule-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="14" width="28" height="18" rx="2" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/>
+        <line x1="8" y1="20" x2="36" y2="20" stroke="var(--color-border-secondary)" stroke-width="0.8"/>
+        <line x1="8" y1="26" x2="36" y2="26" stroke="var(--color-border-secondary)" stroke-width="0.8"/>
+      </svg>
+      <span>papel <strong style="color:var(--color-text-primary)">embrulha</strong> a pedra</span>
+    </div>
+    <div class="rule-row">
+      <svg class="rule-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 16 L22 28 L32 16" stroke="var(--color-border-secondary)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="12" cy="15" r="3" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/>
+        <circle cx="32" cy="15" r="3" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/>
+        <circle cx="22" cy="30" r="3.5" fill="var(--color-background-primary)" stroke="var(--color-border-primary)" stroke-width="1.2"/>
+      </svg>
+      <span>tesoura <strong style="color:var(--color-text-primary)">corta</strong> o papel</span>
+    </div>
+  </div>
+</div>
+
+<div id="screen-play" class="screen">
+  <span class="back-link" onclick="goTo('screen-menu')">← voltar</span>
+  <div class="scores">
+    <div class="score-card">
+      <div class="score-name" id="play-s1">—</div>
+      <div class="score-num" id="play-p1">0</div>
+    </div>
+    <div class="vs-badge">vs</div>
+    <div class="score-card">
+      <div class="score-name" id="play-s2">—</div>
+      <div class="score-num" id="play-p2">0</div>
+    </div>
+  </div>
+
+  <div class="step-indicator" id="step-dots">
+    <div class="step-dot active" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+  </div>
+
+  <div id="player1-turn" class="player-section">
+    <div class="player-label">escolha de <span class="player-name-tag" id="turn-name1">—</span></div>
+    <div class="choices">
+      <button class="choice-btn" onclick="selectMove(1,'pedra')">
+        <svg class="choice-icon" viewBox="0 0 44 44" fill="none">
+          <ellipse cx="22" cy="26" rx="13" ry="9" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/>
+          <ellipse cx="22" cy="22" rx="10" ry="12" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/>
+          <ellipse cx="22" cy="20" rx="7" ry="9" fill="var(--color-background-primary)" stroke="var(--color-border-primary)" stroke-width="1.2"/>
+        </svg>
+        <span class="choice-label">pedra</span>
+      </button>
+      <button class="choice-btn" onclick="selectMove(1,'papel')">
+        <svg class="choice-icon" viewBox="0 0 44 44" fill="none">
+          <rect x="8" y="14" width="28" height="18" rx="2" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/>
+          <line x1="8" y1="20" x2="36" y2="20" stroke="var(--color-border-secondary)" stroke-width="0.8"/>
+          <line x1="8" y1="26" x2="36" y2="26" stroke="var(--color-border-secondary)" stroke-width="0.8"/>
+        </svg>
+        <span class="choice-label">papel</span>
+      </button>
+      <button class="choice-btn" onclick="selectMove(1,'tesoura')">
+        <svg class="choice-icon" viewBox="0 0 44 44" fill="none">
+          <path d="M12 16 L22 28 L32 16" stroke="var(--color-border-secondary)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <circle cx="12" cy="15" r="3" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/>
+          <circle cx="32" cy="15" r="3" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/>
+          <circle cx="22" cy="30" r="3.5" fill="var(--color-background-primary)" stroke="var(--color-border-primary)" stroke-width="1.2"/>
+        </svg>
+        <span class="choice-label">tesoura</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="player2-turn" class="player-section" style="display:none;">
+    <div class="player-label">escolha de <span class="player-name-tag" id="turn-name2">—</span></div>
+    <div style="margin-bottom:10px; font-size:12px; color:var(--color-text-tertiary);">
+      <span id="p1-hidden-label">—</span> já escolheu
+    </div>
+    <div class="choices">
+      <button class="choice-btn" onclick="selectMove(2,'pedra')">
+        <svg class="choice-icon" viewBox="0 0 44 44" fill="none">
+          <ellipse cx="22" cy="26" rx="13" ry="9" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/>
+          <ellipse cx="22" cy="22" rx="10" ry="12" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/>
+          <ellipse cx="22" cy="20" rx="7" ry="9" fill="var(--color-background-primary)" stroke="var(--color-border-primary)" stroke-width="1.2"/>
+        </svg>
+        <span class="choice-label">pedra</span>
+      </button>
+      <button class="choice-btn" onclick="selectMove(2,'papel')">
+        <svg class="choice-icon" viewBox="0 0 44 44" fill="none">
+          <rect x="8" y="14" width="28" height="18" rx="2" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/>
+          <line x1="8" y1="20" x2="36" y2="20" stroke="var(--color-border-secondary)" stroke-width="0.8"/>
+          <line x1="8" y1="26" x2="36" y2="26" stroke="var(--color-border-secondary)" stroke-width="0.8"/>
+        </svg>
+        <span class="choice-label">papel</span>
+      </button>
+      <button class="choice-btn" onclick="selectMove(2,'tesoura')">
+        <svg class="choice-icon" viewBox="0 0 44 44" fill="none">
+          <path d="M12 16 L22 28 L32 16" stroke="var(--color-border-secondary)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <circle cx="12" cy="15" r="3" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/>
+          <circle cx="32" cy="15" r="3" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/>
+          <circle cx="22" cy="30" r="3.5" fill="var(--color-background-primary)" stroke="var(--color-border-primary)" stroke-width="1.2"/>
+        </svg>
+        <span class="choice-label">tesoura</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="result-section" style="display:none; width:100%; max-width:400px; display:none; flex-direction:column; gap:12px; align-items:center;">
+    <div class="result-area">
+      <div class="result-row">
+        <div class="result-move">
+          <svg id="res-icon1" viewBox="0 0 44 44" fill="none" style="width:36px;height:36px;"></svg>
+          <span class="result-move-label" id="res-name1">—</span>
+          <span style="font-size:12px;color:var(--color-text-secondary);" id="res-move1">—</span>
+        </div>
+        <span style="font-size:18px;color:var(--color-text-tertiary);">vs</span>
+        <div class="result-move">
+          <svg id="res-icon2" viewBox="0 0 44 44" fill="none" style="width:36px;height:36px;"></svg>
+          <span class="result-move-label" id="res-name2">—</span>
+          <span style="font-size:12px;color:var(--color-text-secondary);" id="res-move2">—</span>
+        </div>
+      </div>
+      <div style="border-top:0.5px solid var(--color-border-tertiary);margin-top:12px;padding-top:12px;">
+        <div class="result-winner" id="res-winner">—</div>
+        <div class="result-sub" id="res-sub">—</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-primary" onclick="playAgain()">jogar de novo</button>
+      <button class="btn-ghost" onclick="goTo('screen-menu')">menu</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ICONS = {
+  pedra: `<ellipse cx="22" cy="26" rx="13" ry="9" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/><ellipse cx="22" cy="22" rx="10" ry="12" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/><ellipse cx="22" cy="20" rx="7" ry="9" fill="var(--color-background-primary)" stroke="var(--color-border-primary)" stroke-width="1.2"/>`,
+  papel: `<rect x="8" y="14" width="28" height="18" rx="2" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/><line x1="8" y1="20" x2="36" y2="20" stroke="var(--color-border-secondary)" stroke-width="0.8"/><line x1="8" y1="26" x2="36" y2="26" stroke="var(--color-border-secondary)" stroke-width="0.8"/>`,
+  tesoura: `<path d="M12 16 L22 28 L32 16" stroke="var(--color-border-secondary)" stroke-width="1.5" fill="none" stroke-linecap="round"/><circle cx="12" cy="15" r="3" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/><circle cx="32" cy="15" r="3" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" stroke-width="1.2"/><circle cx="22" cy="30" r="3.5" fill="var(--color-background-primary)" stroke="var(--color-border-primary)" stroke-width="1.2"/>`
+};
+
+let p = { n1: '', n2: '', s1: 0, s2: 0, m1: null, m2: null };
+
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startGame() {
+  const n1 = document.getElementById('name1').value.trim();
+  const n2 = document.getElementById('name2').value.trim();
+  if (!n1 || !n2) return;
+  p.n1 = n1; p.n2 = n2; p.s1 = 0; p.s2 = 0;
+  updateScoreDisplays();
+  document.getElementById('menu-title').textContent = n1 + ' & ' + n2;
+  goTo('screen-menu');
+}
+
+function updateScoreDisplays() {
+  ['menu','play'].forEach(prefix => {
+    const s1 = document.getElementById(prefix+'-s1');
+    const s2 = document.getElementById(prefix+'-s2');
+    const p1 = document.getElementById(prefix+'-p1');
+    const p2 = document.getElementById(prefix+'-p2');
+    if(s1) s1.textContent = p.n1;
+    if(s2) s2.textContent = p.n2;
+    if(p1) p1.textContent = p.s1;
+    if(p2) p2.textContent = p.s2;
+  });
+}
+
+function playAgain() {
+  p.m1 = null; p.m2 = null;
+  document.getElementById('result-section').style.display = 'none';
+  document.getElementById('player1-turn').style.display = 'block';
+  document.getElementById('player2-turn').style.display = 'none';
+  document.querySelectorAll('.choice-btn').forEach(b => { b.classList.remove('selected','disabled'); });
+  document.getElementById('dot1').classList.add('active');
+  document.getElementById('dot2').classList.remove('active');
+  document.getElementById('turn-name1').textContent = p.n1;
+  document.getElementById('turn-name2').textContent = p.n2;
+  document.getElementById('play-p1').textContent = p.s1;
+  document.getElementById('play-p2').textContent = p.s2;
+  goTo('screen-play');
+}
+
+function selectMove(player, move) {
+  if (player === 1) {
+    p.m1 = move;
+    document.getElementById('turn-name1').textContent = p.n1;
+    document.getElementById('turn-name2').textContent = p.n2;
+    document.getElementById('p1-hidden-label').textContent = p.n1;
+    document.getElementById('player1-turn').style.display = 'none';
+    document.getElementById('player2-turn').style.display = 'block';
+    document.getElementById('dot1').classList.remove('active');
+    document.getElementById('dot2').classList.add('active');
+  } else {
+    p.m2 = move;
+    showResult();
+  }
+}
+
+function showResult() {
+  document.getElementById('player2-turn').style.display = 'none';
+  const rs = document.getElementById('result-section');
+  rs.style.display = 'flex';
+
+  document.getElementById('res-icon1').innerHTML = ICONS[p.m1];
+  document.getElementById('res-icon2').innerHTML = ICONS[p.m2];
+  document.getElementById('res-name1').textContent = p.n1;
+  document.getElementById('res-name2').textContent = p.n2;
+  document.getElementById('res-move1').textContent = p.m1;
+  document.getElementById('res-move2').textContent = p.m2;
+
+  const wins = {pedra:'tesoura', papel:'pedra', tesoura:'papel'};
+  const verbs = {pedra:'quebra a', papel:'embrulha a', tesoura:'corta o'};
+
+  let winner, sub;
+  if (p.m1 === p.m2) {
+    winner = 'empate!';
+    sub = 'nenhum ponto foi marcado';
+  } else if (wins[p.m1] === p.m2) {
+    winner = p.n1 + ' ganhou!';
+    sub = p.m1 + ' ' + verbs[p.m1] + ' ' + p.m2;
+    p.s1++;
+  } else {
+    winner = p.n2 + ' ganhou!';
+    sub = p.m2 + ' ' + verbs[p.m2] + ' ' + p.m1;
+    p.s2++;
+  }
+
+  document.getElementById('res-winner').textContent = winner;
+  document.getElementById('res-sub').textContent = sub;
+  updateScoreDisplays();
+}
+
+function resetAll() {
+  p = { n1: '', n2: '', s1: 0, s2: 0, m1: null, m2: null };
+  document.getElementById('name1').value = '';
+  document.getElementById('name2').value = '';
+  goTo('screen-names');
+}
+
+document.getElementById('turn-name1').textContent = '';
+document.getElementById('turn-name2').textContent = '';
+</script>
